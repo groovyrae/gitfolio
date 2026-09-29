@@ -27,6 +27,10 @@ async function populateCSS({
   let template = path.resolve(assetDir, "index.css");
   let stylesheet = path.join(outDir, "index.css");
 
+  if (fs.existsSync(stylesheet)) {
+    return;
+  }
+
   try {
     await fs.accessAsync(outDir, fs.constants.F_OK);
   } catch (err) {

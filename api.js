@@ -24,6 +24,8 @@ async function getRepos(username, opts = {}) {
     (types.includes("owner") && types.includes("member"))
   ) {
     type = "all";
+  } else if (types.includes("owner")) {
+    type = "owner";
   } else if (types.includes("member")) {
     type = "member";
   }
@@ -37,6 +39,24 @@ async function getRepos(username, opts = {}) {
     tempRepos = JSON.parse(tempRepos.body);
     repos = repos.concat(tempRepos);
   } while (tempRepos.length == 100);
+
+  const collaboratedRepositoryNames = new Set(
+    repos
+      .filter(repo => {
+        const ownerLogin = repo.owner && repo.owner.login;
+        return (
+          repo.fork === false &&
+          ownerLogin &&
+          ownerLogin.toLowerCase() !== username.toLowerCase()
+        );
+      })
+      .map(repo => repo.name.toLowerCase())
+  );
+  repos.forEach(repo => {
+    repo.isCollaboration =
+      repo.fork === true &&
+      collaboratedRepositoryNames.has(repo.name.toLowerCase());
+  });
 
   if (sort == "star") {
     repos = repos.sort(function(a, b) {

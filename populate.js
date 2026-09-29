@@ -30,81 +30,28 @@ function convertToEmoji(text) {
   }
 }
 
-module.exports.updateHTML = (username, opts) => {
-  const { includeFork, twitter, linkedin, medium, dribbble } = opts;
-  //add data to assets/index.html
-  jsdom
-    .fromFile(`${__dirname}/assets/index.html`, options)
-    .then(function(dom) {
-      let window = dom.window,
-        document = window.document;
-      (async () => {
-        try {
-          console.log("Building HTML/CSS...");
-          const repos = await getRepos(username, opts);
+function populateProfile(document, user, opts) {
+  const { twitter, linkedin, medium, dribbble } = opts;
+  document.title = user.login;
 
-          for (var i = 0; i < repos.length; i++) {
-            let element;
-            if (repos[i].fork == false) {
-              element = document.getElementById("work_section");
-            } else if (includeFork == true) {
-              document.getElementById("forks").style.display = "block";
-              element = document.getElementById("forks_section");
-            } else {
-              continue;
-            }
-            element.innerHTML += `
-                        <a href="${repos[i].html_url}" target="_blank">
-                        <section>
-                            <div class="section_title">${repos[i].name}</div>
-                            <div class="about_section">
-                            <span style="display:${
-                              repos[i].description == undefined
-                                ? "none"
-                                : "block"
-                            };">${convertToEmoji(repos[i].description)}</span>
-                            </div>
-                            <div class="bottom_section">
-                                <span style="display:${
-                                  repos[i].language == null
-                                    ? "none"
-                                    : "inline-block"
-                                };"><i class="fas fa-code"></i>&nbsp; ${
-              repos[i].language
-            }</span>
-                                <span><i class="fas fa-star"></i>&nbsp; ${
-                                  repos[i].stargazers_count
-                                }</span>
-                                <span><i class="fas fa-code-branch"></i>&nbsp; ${
-                                  repos[i].forks_count
-                                }</span>
-                            </div>
-                        </section>
-                        </a>`;
-          }
-          const user = await getUser(username);
-          document.title = user.login;
-          var icon = document.createElement("link");
-          icon.setAttribute("rel", "icon");
-          icon.setAttribute("href", user.avatar_url);
-          icon.setAttribute("type", "image/png");
+  var icon = document.createElement("link");
+  icon.setAttribute("rel", "icon");
+  icon.setAttribute("href", user.avatar_url);
+  icon.setAttribute("type", "image/png");
+  document.getElementsByTagName("head")[0].appendChild(icon);
 
-          document.getElementsByTagName("head")[0].appendChild(icon);
-          document.getElementById(
-            "profile_img"
-          ).style.background = `url('${user.avatar_url}') center center`;
-          document.getElementById(
-            "username"
-          ).innerHTML = `<span style="display:${
-            user.name == null || !user.name ? "none" : "block"
-          };">${user.name}</span><a href="${user.html_url}">@${user.login}</a>`;
-          //document.getElementById("github_link").href = `https://github.com/${user.login}`;
-          document.getElementById("userbio").innerHTML = convertToEmoji(
-            user.bio
-          );
-          document.getElementById("userbio").style.display =
-            user.bio == null || !user.bio ? "none" : "block";
-          document.getElementById("about").innerHTML = `
+  document.getElementById(
+    "profile_img"
+  ).style.background = `url('${user.avatar_url}') center center`;
+  document.getElementById(
+    "username"
+  ).innerHTML = `<span style="display:${
+    user.name == null || !user.name ? "none" : "block"
+  }">${user.name}</span><a href="${user.html_url}">@${user.login}</a>`;
+  document.getElementById("userbio").innerHTML = convertToEmoji(user.bio);
+  document.getElementById("userbio").style.display =
+    user.bio == null || !user.bio ? "none" : "block";
+  document.getElementById("about").innerHTML = `
                 <span style="display:${
                   user.company == null || !user.company ? "none" : "block"
                 };"><i class="fas fa-users"></i> &nbsp; ${user.company}</span>
@@ -114,13 +61,13 @@ module.exports.updateHTML = (username, opts) => {
                 <span style="display:${
                   user.blog == null || !user.blog ? "none" : "block"
                 };"><i class="fas fa-link"></i> &nbsp; <a href="${user.blog}">${
-            user.blog
-          }</a></span>
+    user.blog
+  }</a></span>
                 <span style="display:${
                   user.location == null || !user.location ? "none" : "block"
                 };"><i class="fas fa-map-marker-alt"></i> &nbsp;&nbsp; ${
-            user.location
-          }</span>
+    user.location
+  }</span>
                 <span style="display:${
                   user.hireable == false || !user.hireable ? "none" : "block"
                 };"><i class="fas fa-user-tie"></i> &nbsp;&nbsp; Available for hire</span>
@@ -139,7 +86,83 @@ module.exports.updateHTML = (username, opts) => {
                 };"><a href="https://www.medium.com/@${medium}/" target="_blank" class="socials"><i class="fab fa-medium-m"></i></a></span>
                 </div>
                 `;
-          //add data to config.json
+}
+
+module.exports.updateHTML = (username, opts) => {
+  const { includeFork } = opts;
+  const sourceHTML = fs.existsSync(`${outDir}/index.html`)
+    ? `${outDir}/index.html`
+    : `${__dirname}/assets/index.html`;
+  const isInitialBuild = sourceHTML === `${__dirname}/assets/index.html`;
+
+  jsdom
+    .fromFile(sourceHTML, options)
+    .then(function(dom) {
+      let window = dom.window,
+        document = window.document;
+      (async () => {
+        try {
+          console.log("Building HTML/CSS...");
+          const repos = await getRepos(username, opts);
+
+          document.getElementById("work_section").innerHTML = "";
+          document.getElementById("forks_section").innerHTML = "";
+          document.getElementById("forks").style.display = includeFork
+            ? "block"
+            : "none";
+
+          for (var i = 0; i < repos.length; i++) {
+            let element;
+            const isOwned =
+              repos[i].owner &&
+              repos[i].owner.login.toLowerCase() === username.toLowerCase();
+            if (repos[i].fork == false && isOwned) {
+              element = document.getElementById("work_section");
+            } else if (repos[i].fork == true && includeFork == true) {
+              element = document.getElementById("forks_section");
+            } else {
+              continue;
+            }
+            element.innerHTML += `
+                        <a href="${repos[i].html_url}" target="_blank">
+                        <section>
+                            <div class="section_title">${repos[i].name}</div>
+                            <div class="about_section">
+                            <span style="display:${
+                              repos[i].description == undefined
+                                ? "none"
+                                : "block"
+                            }">${convertToEmoji(repos[i].description)}</span>
+                            </div>
+                            <div class="bottom_section">
+                                <span style="display:${
+                                  repos[i].language == null
+                                    ? "none"
+                                    : "inline-block"
+                                };"><i class="fas fa-code"></i>&nbsp; ${
+              repos[i].language
+            }</span>
+                                ${
+                                  repos[i].isCollaboration === true
+                                    ? '<span><i class="fas fa-users"></i></span>'
+                                    : ""
+                                }
+                                <span><i class="fas fa-star"></i>&nbsp; ${
+                                  repos[i].stargazers_count
+                                }</span>
+                                <span><i class="fas fa-code-branch"></i>&nbsp; ${
+                                  repos[i].forks_count
+                                }</span>
+                            </div>
+                        </section>
+                        </a>`;
+          }
+
+          const user = await getUser(username);
+          if (isInitialBuild) {
+            populateProfile(document, user, opts);
+          }
+
           const data = await getConfig();
           data[0].username = user.login;
           data[0].name = user.name;
