@@ -18,7 +18,8 @@ async function updateCommand() {
     twitter: data[0].twitter,
     linkedin: data[0].linkedin,
     medium: data[0].medium,
-    dribbble: data[0].dribbble
+    dribbble: data[0].dribbble,
+    preserveConfig: true
   };
   updateHTML(username, opts);
 }

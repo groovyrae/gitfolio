@@ -89,7 +89,7 @@ function populateProfile(document, user, opts) {
 }
 
 module.exports.updateHTML = (username, opts) => {
-  const { includeFork } = opts;
+  const { includeFork, preserveConfig } = opts;
   const sourceHTML = fs.existsSync(`${outDir}/index.html`)
     ? `${outDir}/index.html`
     : `${__dirname}/assets/index.html`;
@@ -163,19 +163,21 @@ module.exports.updateHTML = (username, opts) => {
             populateProfile(document, user, opts);
           }
 
-          const data = await getConfig();
-          data[0].username = user.login;
-          data[0].name = user.name;
-          data[0].userimg = user.avatar_url;
+          if (!preserveConfig) {
+            const data = await getConfig();
+            data[0].username = user.login;
+            data[0].name = user.name;
+            data[0].userimg = user.avatar_url;
 
-          await fs.writeFile(
-            `${outDir}/config.json`,
-            JSON.stringify(data, null, " "),
-            function(err) {
-              if (err) throw err;
-              console.log("Config file updated.");
-            }
-          );
+            await fs.writeFile(
+              `${outDir}/config.json`,
+              JSON.stringify(data, null, " "),
+              function(err) {
+                if (err) throw err;
+                console.log("Config file updated.");
+              }
+            );
+          }
           await fs.writeFile(
             `${outDir}/index.html`,
             "<!DOCTYPE html>" + window.document.documentElement.outerHTML,

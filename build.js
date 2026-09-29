@@ -23,21 +23,19 @@ async function populateCSS({
   background = "https://images.unsplash.com/photo-1553748024-d1b27fb3f960?w=1500&q=80"
 } = {}) {
   /* Get the theme the user requests. Defaults to 'light' */
-  theme = `${theme}.css`;
+  theme = theme.endsWith(".css") ? theme : `${theme}.css`;
   let template = path.resolve(assetDir, "index.css");
   let stylesheet = path.join(outDir, "index.css");
 
-  if (fs.existsSync(stylesheet)) {
-    return;
+  if (!fs.existsSync(stylesheet)) {
+    try {
+      await fs.accessAsync(outDir, fs.constants.F_OK);
+    } catch (err) {
+      await fs.mkdirAsync(outDir);
+    }
+    /* Copy over the template CSS stylesheet */
+    await fs.copyFileAsync(template, stylesheet);
   }
-
-  try {
-    await fs.accessAsync(outDir, fs.constants.F_OK);
-  } catch (err) {
-    await fs.mkdirAsync(outDir);
-  }
-  /* Copy over the template CSS stylesheet */
-  await fs.copyFileAsync(template, stylesheet);
 
   /* Get an array of every available theme */
   let themes = await fs.readdirAsync(path.join(assetDir, "themes"));
