@@ -20,22 +20,21 @@ const config = path.join(outDir, "config.json");
  */
 async function populateCSS({
   theme = "light",
-  background = "https://images.unsplash.com/photo-1553748024-d1b27fb3f960?w=1500&q=80"
+  background = "https://images.unsplash.com/photo-1553748024-d1b27fb3f960?w=1500&q=80",
+  accent
 } = {}) {
   /* Get the theme the user requests. Defaults to 'light' */
   theme = theme.endsWith(".css") ? theme : `${theme}.css`;
   let template = path.resolve(assetDir, "index.css");
   let stylesheet = path.join(outDir, "index.css");
 
-  if (!fs.existsSync(stylesheet)) {
-    try {
-      await fs.accessAsync(outDir, fs.constants.F_OK);
-    } catch (err) {
-      await fs.mkdirAsync(outDir);
-    }
-    /* Copy over the template CSS stylesheet */
-    await fs.copyFileAsync(template, stylesheet);
+  try {
+    await fs.accessAsync(outDir, fs.constants.F_OK);
+  } catch (err) {
+    await fs.mkdirAsync(outDir);
   }
+  /* Start from the base stylesheet so themes do not accumulate across builds. */
+  await fs.copyFileAsync(template, stylesheet);
 
   /* Get an array of every available theme */
   let themes = await fs.readdirAsync(path.join(assetDir, "themes"));
@@ -44,12 +43,16 @@ async function populateCSS({
     console.error('Error: Requested theme not found. Defaulting to "light".');
     theme = "light";
   }
+  accent =
+    accent ||
+    (theme === "dark" ? "rgb(146, 72, 235)" : "rgb(119, 27, 176)");
   /* Read in the theme stylesheet */
   let themeSource = await fs.readFileSync(path.join(assetDir, "themes", theme));
   themeSource = themeSource.toString("utf-8");
   let themeTemplate = hbs.compile(themeSource);
   let styles = themeTemplate({
-    background: `${background}`
+    background: `${background}`,
+    accent: `${accent}`
   });
   /* Add the user-specified styles to the new stylesheet */
   await fs.appendFileAsync(stylesheet, styles);

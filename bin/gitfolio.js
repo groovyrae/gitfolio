@@ -1,4 +1,20 @@
 #! /usr/bin/env node
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+if (process.argv.length === 2) {
+  const result = spawnSync(
+    "sh",
+    [path.resolve(__dirname, "../build.sh")],
+    {
+      cwd: path.resolve(__dirname, ".."),
+      stdio: "inherit"
+    }
+  );
+
+  process.exit(result.status === null ? 1 : result.status);
+}
+
 /* Argument parser */
 const program = require("commander");
 
@@ -22,6 +38,7 @@ program
   )
   .option("-t, --theme [theme]", "specify a theme to use", "light")
   .option("-b, --background [background]", "set the background image")
+  .option("-a, --accent [color]", "set the accent color")
   .option("-f, --fork", "includes forks with repos")
   .option("-s, --sort [sort]", "set default sort for repository", "created")
   .option("-o, --order [order]", "set default order on sort", "asc")

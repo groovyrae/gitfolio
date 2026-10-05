@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css?family=Poppins");
 @import url("https://fonts.googleapis.com/css?family=Questrial");
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0%;
   padding: 0%;
@@ -146,6 +150,35 @@ body {
   left: 0;
 }
 
+#header {
+  width: 68vw;
+  height: 8vh;
+  text-align: right;
+  padding: 3vh 0px;
+  position: fixed;
+  right: 0;
+  z-index: 10;
+}
+
+#header a {
+  color: var(--text-color);
+  text-decoration: none;
+  margin-left: 4vw;
+  font-weight: bold;
+}
+
+#header a:hover,
+#header a.active {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 10px;
+}
+
+#navbar {
+  padding: 3vh 3vw 3vh 0px;
+  text-align: right;
+}
+
 #blog-display h1 {
   font-size: 50px;
   color: var(--text-color);
@@ -180,20 +213,6 @@ body {
   margin: 2vh 0px;
   border-radius: 5px;
   border: 1px solid rgb(0, 0, 0, 0.08);
-}
-
-#header {
-  width: 63vw;
-  text-align: right;
-  padding: 3vh 0px;
-  position: absolute;
-}
-
-#header a {
-  color: var(--text-color);
-  text-decoration: none;
-  margin-left: 4vw;
-  font-weight: bold;
 }
 
 #footer_blog {
@@ -283,11 +302,24 @@ body {
 #work {
   margin: 2vh 0px;
   padding: 4vh 0px !important;
+  scroll-margin-top: 8vh;
 }
 
 #forks {
   margin: 2vh 0px;
   padding: 4vh 0px !important;
+  scroll-margin-top: 8vh;
+}
+
+.header_style {
+  background: var(--bg-color);
+}
+
+.nav_link {
+  color: var(--text-color);
+  text-decoration: none;
+  margin-left: 4vw;
+  font-weight: bold;
 }
 
 .projects {
