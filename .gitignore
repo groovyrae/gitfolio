@@ -60,6 +60,9 @@ typings/
 # next.js build output
 .next
 
+# Transfers contents of dist to another folder
+publish.sh
+
 # Built website files
 dist/
 
