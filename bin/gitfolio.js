@@ -2,19 +2,6 @@
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-if (process.argv.length === 2) {
-  const result = spawnSync(
-    "sh",
-    [path.resolve(__dirname, "../build.sh")],
-    {
-      cwd: path.resolve(__dirname, ".."),
-      stdio: "inherit"
-    }
-  );
-
-  process.exit(result.status === null ? 1 : result.status);
-}
-
 /* Argument parser */
 const program = require("commander");
 
@@ -22,6 +9,7 @@ process.env.OUT_DIR = process.env.OUT_DIR || process.cwd();
 
 const { buildCommand } = require("../build");
 const { updateCommand } = require("../update");
+const { addCommand } = require("../add");
 const { uiCommand } = require("../ui");
 const { runCommand } = require("../run");
 const { version } = require("../package.json");
@@ -52,6 +40,11 @@ program
   .command("update")
   .description("Update user and repository data")
   .action(updateCommand);
+
+program
+  .command("add [theme] [background] [accent]")
+  .description("Add a new theme, background or accent color to the site")
+  .action(addCommand);
 
 program
   .command("ui")
