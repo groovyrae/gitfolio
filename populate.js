@@ -88,6 +88,22 @@ function populateProfile(document, user, opts) {
                 `;
 }
 
+function projectImagePath(repoName) {
+  const extensions = [".png", ".jpg", ".jpeg", ".gif"];
+  const extension = extensions.find(ext =>
+    fs.existsSync(`${outDir}/assets/project-images/${repoName}${ext}`)
+  );
+
+  if (extension) {
+    return `
+                            <div class="project-image">
+                              <img src="./assets/project-images/${repoName}${extension}" alt="${repoName} project preview">
+                            </div>`;
+  }
+
+  return "";
+}
+
 module.exports.updateHTML = (username, opts) => {
   const { includeFork, preserveConfig } = opts;
   const sourceHTML = fs.existsSync(`${outDir}/index.html`)
@@ -133,7 +149,7 @@ module.exports.updateHTML = (username, opts) => {
                                 ? "none"
                                 : "block"
                             }">${convertToEmoji(repos[i].description)}</span>
-                            </div>
+                            </div>${projectImagePath(repos[i].name)}
                             <div class="bottom_section">
                                 <span style="display:${
                                   repos[i].language == null
