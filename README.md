@@ -22,7 +22,7 @@ without it being overwritten by build commands. It also allows for updating the 
 Install gitfolio
 
 ```sh
-npm i -g github:groovyrae/gitfolio
+npm install -global github:groovyrae/gitfolio
 ```
 
 ### Let's Build

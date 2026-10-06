@@ -2,7 +2,7 @@
 
 set -eu
 
-THEME="${1:-light}"
+THEME="${1:-dark}"
 BACKGROUND="${2:-spaceslime.jpg}"
 
 case "$THEME" in
